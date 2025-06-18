@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -19,14 +20,18 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -36,9 +41,12 @@ import com.example.chiapodfun.di.DaggerAppComponent
 import com.example.chiapodfun.repo.ApodRepository
 import com.example.chiapodfun.ui.ApodViewModel
 import com.example.chiapodfun.ui.ApodViewModelUiState
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.time.format.DateTimeParseException
 import javax.inject.Inject
 
-class ApodFragment: Fragment() {
+class ApodFragment : Fragment() {
 
     @Inject
     lateinit var repository: ApodRepository
@@ -69,8 +77,10 @@ class ApodFragment: Fragment() {
 
     @Composable
     private fun ApodContent(uiState: ApodViewModelUiState) {
+        val context = LocalContext.current
         val apod by remember { uiState.apod }
         val pictureDate by remember { uiState.pictureDate }
+        var inputText by remember { mutableStateOf("") }
 
         Scaffold(
             topBar = {
@@ -95,49 +105,114 @@ class ApodFragment: Fragment() {
                     .padding(innerPadding)
                     .background(Color(0xFF000042))
                     .verticalScroll(scrollState),
-                verticalArrangement = Arrangement.Center,
+                verticalArrangement = Arrangement.Top,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
 
-                Text(
-                    text = "Date: $pictureDate",
-                    modifier = Modifier.wrapContentHeight(),
-                    color = Color.White,
-                    textAlign = TextAlign.Center,
-                    fontSize = 20.sp
-                )
+                FillerWhiteText("Date $pictureDate")
 
-                apod?.let {
+                if(apod != null) {
                     AsyncImage(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(20.dp),
-                        model = it.url,
-                        contentDescription = it.title
+                        model = apod!!.url,
+                        contentDescription = apod!!.title
                     )
+                } else {
+                    FillerWhiteText("Something went wrong")
                 }
 
-                Button(
+                TextField(
+                    value = inputText,
+                    onValueChange = { inputText = it },
+                    label = { Text("Enter date (YYYY-mm-dd)") },
                     modifier = Modifier
-                        .wrapContentSize()
-                        .padding(10.dp),
-                    colors = ButtonColors(
-                        containerColor = Color(0xFFffd700),
-                        contentColor = Color(0xFF102B43),
-                        disabledContainerColor = Color(0xFFffd700),
-                        disabledContentColor = Color(0xFFffd700)
-                    ),
-                    onClick = { uiState.getNewPic() }
-                ) {
-                    Text(
-                        text = "Get a random pic!",
-                        modifier = Modifier.wrapContentHeight(),
-                        textAlign = TextAlign.Center,
-                        fontSize = 20.sp
-                    )
-                }
+                        .padding(20.dp)
+                        .fillMaxWidth()
+                )
+
+                GetPicButton(
+                    text = "Get the pic of selected date!",
+                    onClick = {
+                        val (isValid, errorText) = validateDateInput(inputText)
+                        if(isValid) {
+                            uiState.getPicOnDate(inputText)
+                        } else {
+                            Toast.makeText(context, errorText, Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                )
+
+                FillerWhiteText("or")
+
+                GetPicButton(
+                    text = "Get a random pic!",
+                    onClick = { uiState.getRandomPic() }
+                )
             }
         }
 
+    }
+
+    @Composable
+    private fun GetPicButton(
+        text: String,
+        onClick: () -> Unit
+    ) {
+        Button(
+            modifier = Modifier
+                .wrapContentSize()
+                .padding(10.dp),
+            colors = ButtonColors(
+                containerColor = Color(0xFFffd700),
+                contentColor = Color(0xFF102B43),
+                disabledContainerColor = Color(0xFFffd700),
+                disabledContentColor = Color(0xFFffd700)
+            ),
+            onClick = onClick
+        ) {
+            Text(
+                text = text,
+                modifier = Modifier.wrapContentHeight(),
+                textAlign = TextAlign.Center,
+                fontSize = 20.sp
+            )
+        }
+    }
+
+    @Composable
+    private fun FillerWhiteText(text: String) {
+        Text(
+            text = text,
+            modifier = Modifier
+                .wrapContentHeight()
+                .padding(5.dp),
+            color = Color.White,
+            textAlign = TextAlign.Center,
+            fontSize = 20.sp
+        )
+    }
+
+    /**
+     * Validate given date.
+     *
+     * Not good if format is wrong, or before 1995/06/15
+     *
+     * Otherwise good
+     */
+    private fun validateDateInput(input: String): Pair<Boolean, String?> {
+        val minDate: LocalDate = LocalDate.of(1995, 6, 15)
+
+        return try {
+            val parsedDate = LocalDate.parse(input, DateTimeFormatter.ISO_LOCAL_DATE)   //ISO LOCAL DATE is YYYY-mm-dd
+            if(parsedDate.isBefore(minDate)) {
+                false to "Date must be after 1995-06-15"
+            } else {
+                true to null
+            }
+        } catch (e: DateTimeParseException) {
+            false to "Invalid text or date format. Use YYYY-mm-dd (e.g. 1995-11-12)"
+        }
     }
 }
