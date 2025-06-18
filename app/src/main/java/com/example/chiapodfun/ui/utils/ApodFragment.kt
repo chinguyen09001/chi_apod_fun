@@ -1,4 +1,4 @@
-package com.example.chiapodfun.ui.utils
+package com.example.chiapodfun.ui
 
 import android.content.Context
 import android.os.Bundle
