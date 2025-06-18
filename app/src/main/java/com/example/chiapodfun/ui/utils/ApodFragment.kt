@@ -109,7 +109,7 @@ class ApodFragment : Fragment() {
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
 
-                FillerWhiteText("Date $pictureDate")
+                FillerWhiteText("Date: $pictureDate")
 
                 if(apod != null) {
                     AsyncImage(
