@@ -33,14 +33,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.fragment.app.Fragment
 import coil.compose.AsyncImage
 import com.example.chiapodfun.di.DaggerAppComponent
+import com.example.chiapodfun.model.ApodResponse
 import com.example.chiapodfun.repo.ApodRepository
-import com.example.chiapodfun.ui.ApodViewModel
-import com.example.chiapodfun.ui.ApodViewModelUiState
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
@@ -126,9 +126,9 @@ class ApodFragment : Fragment() {
                 TextField(
                     value = inputText,
                     onValueChange = { inputText = it },
-                    label = { Text("Enter date (YYYY-mm-dd)") },
+                    label = { Text("Enter date (YYYY-mm-dd) after 1995-06-15") },
                     modifier = Modifier
-                        .padding(20.dp)
+                        .padding(12.dp)
                         .fillMaxWidth()
                 )
 
@@ -215,4 +215,27 @@ class ApodFragment : Fragment() {
             false to "Invalid text or date format. Use YYYY-mm-dd (e.g. 1995-11-12)"
         }
     }
+
+    @Suppress("UnrememberedMutableState")
+    @Preview
+    @Composable
+    fun ApodContentPreview() {
+        val uiState = ApodViewModelUiState(
+            pictureDate = mutableStateOf("2025-06-18"),
+            apod = mutableStateOf(
+                ApodResponse(
+                    date = "2025-06018",
+                    explanation = "",
+                    hdurl = "",
+                    title = "",
+                    url = ""
+                )
+            ),
+            getRandomPic = {},
+            getPicOnDate = {}
+        )
+
+        ApodContent(uiState)
+    }
+
 }
