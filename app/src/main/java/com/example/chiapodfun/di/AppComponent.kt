@@ -1,7 +1,7 @@
 package com.example.chiapodfun.di
 
 import com.example.chiapodfun.ui.MainActivity
-import com.example.chiapodfun.ui.utils.ApodFragment
+import com.example.chiapodfun.ui.ApodFragment
 import dagger.Component
 import javax.inject.Singleton
 

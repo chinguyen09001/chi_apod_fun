@@ -14,7 +14,9 @@ import java.time.LocalDate
 import javax.inject.Inject
 import kotlin.random.Random
 
-class ApodViewModel @Inject constructor(private val repository: ApodRepository) : ViewModel() {
+class ApodViewModel @Inject constructor(
+    private val repository: ApodRepository
+) : ViewModel() {
     private val todayDate = LocalDate.now().toEpochDay()
     private val minDate: LocalDate = LocalDate.of(1995, 6, 15)
 
