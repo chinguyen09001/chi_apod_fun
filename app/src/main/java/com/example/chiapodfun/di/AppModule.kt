@@ -8,14 +8,16 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import javax.inject.Singleton
 
+private const val BASE_URL = "https://api.nasa.gov/"
+
 @Module
 class AppModule {
 
     @Singleton
     @Provides
     fun providesRetrofit(): Retrofit = Retrofit.Builder()
-        .baseUrl("https://api.nasa.gov/")
-        .addConverterFactory(GsonConverterFactory.create())
+        .baseUrl(BASE_URL)
+        .addConverterFactory(GsonConverterFactory.create() )
         .build()
 
     @Singleton
